@@ -88,3 +88,5 @@ htg/
 
 # Rope project settings
 .ropeproject
+
+config.py

@@ -8,6 +8,9 @@ from queue import Queue
 from nltk.corpus import stopwords
 
 r = redis.StrictRedis()
+for key in r.keys():
+    r.delete(key)
+
 base_url = 'http://howtogreen.ru'
 _stopwords = set(stopwords.words('russian'))
 regex = re.compile('[а-яё]+', re.M | re.I)
@@ -58,6 +61,5 @@ for theme in get_main_themes():
     t.start()
 
 for i in range(10):
-    print(threading.enumerate())
     Thread(target=parse_recipe_and_save, name='parse and save ' + str(i)).start()
 
