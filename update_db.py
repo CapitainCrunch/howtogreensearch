@@ -6,14 +6,15 @@ import threading
 import pymorphy2
 from queue import Queue
 from nltk.corpus import stopwords
+from lxml import html
 
 r = redis.StrictRedis()
 for key in r.keys():
     r.delete(key)
+
 base_url = 'http://howtogreen.ru'
 _stopwords = set(stopwords.words('russian'))
 regex_words = re.compile('[а-яё]+', re.M | re.I)
-regex_post = re.compile('<div class="b-post.*?">.*?<section', re.M | re.I)
 morph = pymorphy2.MorphAnalyzer()
 
 q = Queue(2000)
@@ -44,7 +45,10 @@ def parse_recipe_and_save():
             url = base_url + url
             print(q.qsize())
             req = requests.get(url).content.decode('utf8')
-            post = regex_post.findall(req)[0]
+            root = html.fromstring(req)
+            element = root.xpath('//div[@class="b-post"]')
+            for e in element:
+                post = e.text_content()
             words = regex_words.findall(post)
             clean_words = set(map(lambda x: x.lower(), words)) - set(_stopwords)
             normal_words = set(map(lambda x: morph.parse(x)[0].normal_form, clean_words))
