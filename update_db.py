@@ -10,11 +10,10 @@ from nltk.corpus import stopwords
 r = redis.StrictRedis()
 for key in r.keys():
     r.delete(key)
-
 base_url = 'http://howtogreen.ru'
 _stopwords = set(stopwords.words('russian'))
 regex_words = re.compile('[а-яё]+', re.M | re.I)
-regex_post = re.compile('<div class="b-post">.*?</div>', re.M | re.I)
+regex_post = re.compile('<div class="b-post.*?">.*?<section', re.M | re.I)
 morph = pymorphy2.MorphAnalyzer()
 
 q = Queue(2000)
@@ -43,7 +42,7 @@ def parse_recipe_and_save():
         if not q.empty():
             url, article_name = q.get()
             url = base_url + url
-            print(url)
+            print(q.qsize())
             req = requests.get(url).content.decode('utf8')
             post = regex_post.findall(req)[0]
             words = regex_words.findall(post)
