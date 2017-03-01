@@ -14,7 +14,7 @@ for key in r.keys():
 base_url = 'http://howtogreen.ru'
 _stopwords = set(stopwords.words('russian'))
 regex_words = re.compile('[а-яё]+', re.M | re.I)
-regex_recipie = re.compile('<div class="b-recipe__body">.*?</div>', re.M | re.I)
+regex_post = re.compile('<div class="b-post">.*?</div>', re.M | re.I)
 morph = pymorphy2.MorphAnalyzer()
 
 q = Queue(2000)
@@ -43,9 +43,10 @@ def parse_recipe_and_save():
         if not q.empty():
             url, article_name = q.get()
             url = base_url + url
+            print(url)
             req = requests.get(url).content.decode('utf8')
-            recipie = regex_recipie.findall(req)[0]
-            words = regex_words.findall(recipie)
+            post = regex_post.findall(req)[0]
+            words = regex_words.findall(post)
             clean_words = set(map(lambda x: x.lower(), words)) - set(_stopwords)
             normal_words = set(map(lambda x: morph.parse(x)[0].normal_form, clean_words))
             for w in normal_words:
